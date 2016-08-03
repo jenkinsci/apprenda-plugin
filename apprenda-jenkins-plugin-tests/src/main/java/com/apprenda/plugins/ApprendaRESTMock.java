@@ -24,7 +24,7 @@ public class ApprendaRESTMock {
         {
             applications = new ArrayList<Application>();
             appHash = new ArrayList<String>();
-            // TEST CASE 1 - app: "app", one version "v1" in published state
+            // TEST CASE 1
             Application app = new Application();
             app.appAlias = "app";
             app.versionHash = new ArrayList<String>();
@@ -36,7 +36,7 @@ public class ApprendaRESTMock {
             app.versions.add(version);
             applications.add(app);
             appHash.add("app");
-            // TEST CASE 2 - app: "bac", two versions "v1" and "v2", v1 is in published state, v2 is in sandbox
+            // TEST CASE 2
             Application bac = new Application();
             bac.appAlias = "bac";
             bac.versions = new ArrayList<Version>();

@@ -15,22 +15,6 @@ class ApprendaTests {
         }
     }
 
-/*    public static boolean testEncryptDecryptApprendaCredentials() throws Exception {
-        String arbitraryCredentialsLocation = "C;/users/public";
-        ApprendaCredentials creds = new ApprendaCredentials("chris@dutronlabs.com", "Meepster23!", "dutronlabs", arbitraryCredentialsLocation);
-        ApprendaCredentials decryptedCreds = ApprendaCredentials.get("chris@dutronlabs.com", arbitraryCredentialsLocation);
-        return creds.equals(decryptedCreds);
-    }
-
-    public static void testAuthentication() throws Exception
-    {
-        String arbitraryCredentialsLocation = "C;/users/public";
-        ApprendaCredentials creds = new ApprendaCredentials("chris@dutronlabs.com", "Meepster23!", "dutronlabs", arbitraryCredentialsLocation);
-        ApprendaClient ac = new ApprendaClient("https://apps.glenlivet.dutronlabs.io", true, arbitraryCredentialsLocation);
-        ac.authenticate("chris@dutronlabs.com");
-        ArrayList<String> array = ac.GetAppAliases("chris@dutronlabs.com");
-    }*/
-
     public static void TestVersionCheck()
     {
         ApprendaRESTMock apprendaRESTMock = new ApprendaRESTMock();
@@ -57,6 +41,5 @@ class ApprendaTests {
     {
         return true;
     }
-
 
 }
