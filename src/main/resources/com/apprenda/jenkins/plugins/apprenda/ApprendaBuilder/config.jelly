@@ -1,0 +1,44 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:c="/lib/credentials">
+      <f:entry title="Credentials" field="credentialsId">
+          <c:select/>
+      </f:entry>
+      <f:entry title="Application Alias" field="appAlias">
+          <!-- This is now a textbox, not a select -->
+          <f:textbox  />
+      </f:entry>
+      <f:entry title="Artifact Name" field="artifactName">
+          <f:textbox />
+      </f:entry>
+      <f:entry title="Package Directory" field="customPackageDirectory">
+          <f:textbox />
+      </f:entry>
+
+      <!-- Removing out of phase I due to issues with Jenkins reloading configuration in BAC build and thus breaking parity -->
+      <!--<f:validateButton title="${%Reload Apps}" progress="${%Loading...}" method="reloadAppAliases" with="username,tenantAlias" />-->
+      <f:entry title="Version Prefix" field="prefix">
+          <f:textbox default="v" />
+      </f:entry>
+      
+
+      <f:entry title="Target Stage" field="stage">
+          <f:select/>
+      </f:entry> 
+
+      <f:advanced>
+          <f:section title="Advanced Options">
+              <f:entry title="Automatically Create New Version Each Time" field="forceNewVersion">
+                  <f:checkbox />
+              </f:entry>
+              <f:block>
+                  <table>
+                      <f:optionalBlock name="dynamic" title="Force Deployment of Application to a Specific Version">
+                          <f:entry title="Version Alias" field="advForceVersionAlias">
+                              <f:textbox />
+                          </f:entry>
+                      </f:optionalBlock>
+                  </table>
+              </f:block>
+          </f:section>
+      </f:advanced>
+</j:jelly>
