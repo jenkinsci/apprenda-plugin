@@ -24,3 +24,6 @@ The Apprenda integration into Jenkins CI is a plugin designed with the standards
 - `mvn install`
 
 This will generate the Jenkins .hpi plugin in the `/target` folder, which you can then install into your Jenkins environment.
+
+## Video
+- View a demo video of using Jenkins with Apprenda at https://apprenda.com/partners/integrations/jenkins-ci/
