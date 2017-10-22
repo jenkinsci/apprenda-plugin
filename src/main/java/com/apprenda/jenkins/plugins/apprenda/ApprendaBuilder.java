@@ -13,6 +13,7 @@ import javax.json.JsonObject;
 import javax.servlet.ServletException;
 
 import org.jenkinsci.remoting.RoleChecker;
+import org.jfree.util.Log;
 import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
@@ -26,6 +27,7 @@ import hudson.AbortException;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
+import hudson.XmlFile;
 import hudson.model.AbstractProject;
 import hudson.model.ItemGroup;
 import hudson.model.Run;
@@ -93,6 +95,7 @@ public class ApprendaBuilder extends Builder implements SimpleBuildStep, Seriali
 		}
 
 		final String url = credentials.getUrl();
+		final boolean isBypassSSL = getDescriptor().isBypassSSL();
 
 		Callable<String, IOException> task = new Callable<String, IOException>() {
 			/**
@@ -106,7 +109,7 @@ public class ApprendaBuilder extends Builder implements SimpleBuildStep, Seriali
 				try {
 					listener.getLogger()
 							.println("[APPRENDA] Begin build step: Deploying application to Apprenda: " + url);
-					ApprendaClient ac = new ApprendaClient(url, getDescriptor().isBypassSSL());
+					ApprendaClient ac = new ApprendaClient(url, isBypassSSL);
 					listener.getLogger().println("[APPRENDA] Authentication starting for " + credentials.getUsername());
 					listener.getLogger().println("[APPRENDA] Tenant Alias: " + credentials.getTenant());
 					// Begin by loading the credentials and authenticating
@@ -276,8 +279,11 @@ public class ApprendaBuilder extends Builder implements SimpleBuildStep, Seriali
 	public static class DescriptorImpl extends BuildStepDescriptor<Builder> {
 		private boolean bypassSSL;
 
+		public DescriptorImpl(){
+	        load();
+	    }
 		public boolean isBypassSSL() {
-			return bypassSSL;
+			return true;
 		}
 
 		@Override

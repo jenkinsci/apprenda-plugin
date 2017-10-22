@@ -12,9 +12,7 @@ local.properties
 .loadpath
 
 work/
-bac-encryption-engine/
-target/
-.idea/
+
 
 # Eclipse Core
 .project

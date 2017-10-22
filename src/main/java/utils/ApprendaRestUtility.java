@@ -50,10 +50,12 @@ public class ApprendaRestUtility {
 			if (ApprendaSessionToken.length() > 0) {
 				Response response = getClient(bypassSSL).target(url).path(path).request(MediaType.APPLICATION_JSON)
 						.header("ApprendaSessionToken", ApprendaSessionToken).post(Entity.json(json));
+				logger.log(Level.FINE, "Response: " + response);
 				return response;
 			} else {
 				Response response = getClient(bypassSSL).target(url).path(path).request(MediaType.APPLICATION_JSON)
 						.post(Entity.json(json));
+				logger.log(Level.FINE, "Response: " + response);
 				return response;
 			}
 		} catch (Exception e) {
