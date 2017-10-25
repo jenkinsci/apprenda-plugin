@@ -7,11 +7,8 @@
           <!-- This is now a textbox, not a select -->
           <f:textbox  />
       </f:entry>
-      <f:entry title="Artifact Name" field="artifactName">
-          <f:textbox />
-      </f:entry>
-      <f:entry title="Package Directory" field="customPackageDirectory">
-          <f:textbox />
+      <f:entry title="Application Name" field="appName">
+          <f:textbox default="${instance.appAlias}" />
       </f:entry>
 
       <!-- Removing out of phase I due to issues with Jenkins reloading configuration in BAC build and thus breaking parity -->
@@ -19,11 +16,30 @@
       <f:entry title="Version Prefix" field="prefix">
           <f:textbox default="v" />
       </f:entry>
-      
 
       <f:entry title="Target Stage" field="stage">
           <f:select/>
-      </f:entry> 
+      </f:entry>
+
+      <f:section title="Select the method for uploading the Apprenda Application Package">
+          <f:radioBlock checked="${instance.archiveUploadMethod != 'archiveURL'}" name="archiveUploadMethod" title="Local File Upload" value="localUpload" inline="true">
+            <f:nested>
+              <f:entry title="Artifact Name" field="artifactName">
+                  <f:textbox />
+              </f:entry>
+              <f:entry title="Package Directory" field="customPackageDirectory">
+                  <f:textbox />
+              </f:entry>
+            </f:nested>
+          </f:radioBlock>
+          <f:radioBlock checked="${instance.archiveUploadMethod == 'archiveURL'}" name="archiveUploadMethod" title="Application Package URL" value="archiveURL" inline="true">
+            <f:nested>
+              <f:entry title="Application Package URL" field="applicationPackageURL">
+                  <f:textbox default="http://"/>
+              </f:entry>
+            </f:nested>
+          </f:radioBlock>
+      </f:section>
 
       <f:advanced>
           <f:section title="Advanced Options">
@@ -32,8 +48,8 @@
               </f:entry>
               <f:block>
                   <table>
-                      <f:optionalBlock name="dynamic" title="Force Deployment of Application to a Specific Version">
-                          <f:entry title="Version Alias" field="advForceVersionAlias">
+                      <f:optionalBlock name="advIsForcingSpecificVersion" title="Force Deployment of Application to a Specific Version" inline="true">
+                          <f:entry title="Version Alias" field="advVersionAliasToBeForced" inline="true">
                               <f:textbox />
                           </f:entry>
                       </f:optionalBlock>

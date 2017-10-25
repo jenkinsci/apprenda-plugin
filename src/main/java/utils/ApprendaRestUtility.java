@@ -101,10 +101,22 @@ public class ApprendaRestUtility {
 		}
 	}
 
-	public Response CreateApplication(boolean bypassSSL, String url, String path, String alias) throws Exception {
+	public Response PatchApplication(boolean bypassSSL, String url, String path, String stage, String applicationPackageURL)
+			throws Exception {
+		try {
+			return getClient(bypassSSL).target(url).path(path).queryParam("action", "patch").queryParam("stage", stage).queryParam("archiveUri", applicationPackageURL)
+					.request(MediaType.APPLICATION_JSON).header("ApprendaSessionToken", ApprendaSessionToken)
+					.post(Entity.json(""));
+		} catch (Exception e) {
+			logger.log(Level.SEVERE, e.getMessage(), e);
+			throw new Exception(e);
+		}
+	}
+
+	public Response CreateApplication(boolean bypassSSL, String url, String path, String alias, String name) throws Exception {
 		try {
 			JSONObject json = new JSONObject();
-			json.put("Name", alias);
+			json.put("Name", name);
 			json.put("Alias", alias);
 
 			Client client = getClient(bypassSSL);
