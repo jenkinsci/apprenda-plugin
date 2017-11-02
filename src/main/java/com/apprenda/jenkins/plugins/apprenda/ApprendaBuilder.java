@@ -133,6 +133,11 @@ public class ApprendaBuilder extends Builder implements SimpleBuildStep, Seriali
 					// then after that, all we have to do is patch it to the
 					// desired
 					// stage. this is the easy part now.
+					if (stage == null || stage.length() < 2)
+					{
+						throw new AbortException("[APPRENDA] Please select a Target Stage for the deployment of this application to Apprenda");
+					}
+
 					File app = null;
 					if (archiveUploadMethod.equals("localUpload"))
 					{
@@ -272,6 +277,21 @@ public class ApprendaBuilder extends Builder implements SimpleBuildStep, Seriali
 			ac.newAppVersion(appAlias, tempNewVersion);
 		} else {
 			tempNewVersion = prefix + versionNumber;
+			boolean thisVersionExists = false;
+			for (int i = 0; i < versions.size(); i++)
+			{
+				JsonObject version = versions.getJsonObject(i);
+				String alias = version.getString("alias");
+				if (alias.matches(tempNewVersion))
+				{
+					thisVersionExists = true;
+				}
+			}
+
+			if (thisVersionExists == false)
+			{
+				ac.newAppVersion(appAlias, tempNewVersion);
+			}
 		}
 		return tempNewVersion;
 	}
