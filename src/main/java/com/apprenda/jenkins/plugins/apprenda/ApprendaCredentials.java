@@ -22,6 +22,7 @@ public class ApprendaCredentials extends BaseStandardCredentials implements Stan
 	protected final String username;
 	protected final Secret password;
 	protected final String url;
+	protected final boolean bypassSSL;
 
 	public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
 
@@ -37,12 +38,13 @@ public class ApprendaCredentials extends BaseStandardCredentials implements Stan
 	@DataBoundConstructor
 	public ApprendaCredentials(@CheckForNull CredentialsScope scope, @CheckForNull String id,
 			@CheckForNull String tenant, @CheckForNull String username, @CheckForNull String password,
-			@CheckForNull String url, String description) {
+			@CheckForNull String url, @CheckForNull boolean bypassSSL, String description) {
 		super(scope, id, description);
 		this.tenant = tenant;
 		this.username = username;
 		this.password = Secret.fromString(password);
 		this.url = url;
+		this.bypassSSL = bypassSSL;
 	}
 
 	public String getTenant() {
@@ -60,7 +62,11 @@ public class ApprendaCredentials extends BaseStandardCredentials implements Stan
 	}
 
 	public String getUrl() {
-		return url;
+		return this.url;
+	}
+
+	public boolean getbypassSSL() {
+		return this.bypassSSL;
 	}
 
 	@Extension

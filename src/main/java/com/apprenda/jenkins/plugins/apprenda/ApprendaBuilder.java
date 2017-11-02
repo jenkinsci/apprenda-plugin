@@ -50,33 +50,40 @@ import net.sf.json.JSONObject;
  */
 public class ApprendaBuilder extends Builder implements SimpleBuildStep, Serializable {
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = 1L;
 	public final String credentialsId;
 	public final String appAlias;
-	public final String advForceVersionAlias;
+	public final String appName;
+	public String advVersionAliasToBeForced;
 	public final String stage;
 	public final String artifactName;
 	public final String prefix;
+	public final String archiveUploadMethod;
 	public final boolean forceNewVersion;
+	public final String customPackageDirectory;
+	public final boolean advIsForcingSpecificVersion;
+	public String applicationPackageURL;
 
 	private static Logger logger = Logger.getLogger("jenkins.plugins.apprenda");
-	public final String customPackageDirectory;
-
 	public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
 
 	@DataBoundConstructor
-	public ApprendaBuilder(String appAlias, String versionAlias, String stage, String artifactName,
-			String credentialsId, String prefix, boolean forceNewVersion, String customPackageDirectory) {
+	public ApprendaBuilder(String appAlias, String appName, String versionAlias, String stage, String artifactName,
+			String credentialsId, String prefix, String advVersionAliasToBeForced, String advancedNewVersionOption, String customPackageDirectory, String applicationPackageURL, String archiveUploadMethod) {
 		this.appAlias = appAlias;
-		this.advForceVersionAlias = versionAlias;
+		this.appName = appName;
+		this.advVersionAliasToBeForced = advVersionAliasToBeForced;
+		this.advIsForcingSpecificVersion = advancedNewVersionOption.equals("Option_ForceSpecificVersion");
 		this.stage = stage;
 		this.artifactName = artifactName;
 		this.credentialsId = credentialsId;
 		this.prefix = prefix;
-		this.forceNewVersion = forceNewVersion;
+		this.forceNewVersion = advancedNewVersionOption.equals("Option_AlwaysNewVersion");
 		this.customPackageDirectory = customPackageDirectory;
+		this.applicationPackageURL = applicationPackageURL;
+		this.archiveUploadMethod = archiveUploadMethod;
 	}
 
 	// this method is called when a build is kicked off. (SimpleBuildStep)
@@ -89,17 +96,15 @@ public class ApprendaBuilder extends Builder implements SimpleBuildStep, Seriali
 				CredentialsProvider.lookupCredentials(ApprendaCredentials.class, Jenkins.getInstance(), ACL.SYSTEM),
 				CredentialsMatchers.withId(credentialsId));
 		if (credentials == null) {
-			// listener.getLogger().println("ERROR: Please configure
-			// Jenkins credentials for Apprenda.");
-			throw new AbortException("ERROR: Please configure Jenkins credentials for Apprenda.");
+			throw new AbortException("[APPRENDA] ERROR: Please configure Jenkins credentials for Apprenda.");
 		}
 
 		final String url = credentials.getUrl();
-		final boolean isBypassSSL = getDescriptor().isBypassSSL();
+		final boolean isBypassSSL = credentials.getbypassSSL();//getDescriptor().isBypassSSL();
 
 		Callable<String, IOException> task = new Callable<String, IOException>() {
 			/**
-			 * 
+			 *
 			 */
 			private static final long serialVersionUID = 1L;
 
@@ -108,8 +113,8 @@ public class ApprendaBuilder extends Builder implements SimpleBuildStep, Seriali
 
 				try {
 					listener.getLogger()
-							.println("[APPRENDA] Begin build step: Deploying application to Apprenda: " + url);
-					ApprendaClient ac = new ApprendaClient(url, isBypassSSL);
+							.println("[APPRENDA] Begin build step: Deploying application to Apprenda. Create client against URL " + url + " with bypassSSL set to " + isBypassSSL);
+					ApprendaClient ac = new ApprendaClient(url, isBypassSSL, listener);
 					listener.getLogger().println("[APPRENDA] Authentication starting for " + credentials.getUsername());
 					listener.getLogger().println("[APPRENDA] Tenant Alias: " + credentials.getTenant());
 					// Begin by loading the credentials and authenticating
@@ -128,28 +133,58 @@ public class ApprendaBuilder extends Builder implements SimpleBuildStep, Seriali
 					// then after that, all we have to do is patch it to the
 					// desired
 					// stage. this is the easy part now.
-					File app = getFile(workspace, artifactName, customPackageDirectory);
+					if (stage == null || stage.length() < 2)
+					{
+						throw new AbortException("[APPRENDA] Please select a Target Stage for the deployment of this application to Apprenda");
+					}
 
-					if (versions == null) {
-						if (!ac.createApp(appAlias, app, stage))
-							throw new AbortException("Apprenda application creation failed");
+					File app = null;
+					if (archiveUploadMethod.equals("localUpload"))
+					{
+							app = getFile(workspace, artifactName, customPackageDirectory);
+							applicationPackageURL = "";
+					}
+
+					if (advIsForcingSpecificVersion == true)
+					{
+						if (advVersionAliasToBeForced == null || advVersionAliasToBeForced.length() < 2)
+						{
+							throw new AbortException("[APPRENDA] When forcing the deployment to a specific version, the complete version should be filled in. Currently set as: " + advVersionAliasToBeForced);
+						}
+						listener.getLogger().println("[APPRENDA] Will attempt to force a specific version: " + advVersionAliasToBeForced);
+					}
+					else
+					{
+						// if the option to force a version alias is not checked, we are not going
+						// to use this variable and set it to null
+						advVersionAliasToBeForced = null;
+					}
+
+					if (versions == null)
+					{
+						listener.getLogger().println("[APPRENDA] Creating a brand new v1 application for alias " + appAlias + " at target stage " + stage);
+						if (!ac.createApp(appAlias, appName, app, stage, applicationPackageURL))
+							throw new AbortException("[APPRENDA] Apprenda application creation failed");
 						return null;
-					} else {
+					}
+					else
+					{
 						String tempNewVersion = detectVersion(versions, ac);
-						if (!ac.patchApp(appAlias, tempNewVersion, app, stage))
-							throw new AbortException("Apprenda application promotion failed");
+						listener.getLogger().println("[APPRENDA] Patching application to " + tempNewVersion + " for alias " + appAlias + " at target stage " + stage);
+						if (!ac.patchApp(appAlias, tempNewVersion, app, stage, applicationPackageURL))
+							throw new AbortException("[APPRENDA] Apprenda application patching failed");
 						return null;
 					}
 
 				} catch (SecurityException s) {
-					listener.getLogger().println("Unable to authenticate: " + s.getMessage());
-					throw new AbortException("Unable to authenticate: " + s.getMessage());
+					listener.getLogger().println("[APPRENDA] Unable to authenticate: " + s.getMessage());
+					throw new AbortException("[APPRENDA] Unable to authenticate: " + s.getMessage());
 				} catch (IOException e) {
-					listener.getLogger().println("ERROR: IOException: " + e.getMessage());
-					throw new AbortException("ERROR: IOException" + e.getMessage());
+					listener.getLogger().println("[APPRENDA] ERROR: IOException: " + e.getMessage());
+					throw new AbortException("[APPRENDA] ERROR: IOException" + e.getMessage());
 				} catch (InterruptedException e) {
-					listener.getLogger().println("ERROR: InterruptedException: " + e.getMessage());
-					throw new AbortException("Interrupted" + e.getMessage());
+					listener.getLogger().println("[APPRENDA] ERROR: InterruptedException: " + e.getMessage());
+					throw new AbortException("[APPRENDA] Interrupted" + e.getMessage());
 				} catch (Exception e) {
 					listener.getLogger().println(e.getMessage());
 					logger.log(Level.SEVERE, e.getMessage(), e);
@@ -170,11 +205,11 @@ public class ApprendaBuilder extends Builder implements SimpleBuildStep, Seriali
 		} catch (IOException e) {
 			listener.getLogger().println(e.getMessage());
 			logger.log(Level.SEVERE, e.getMessage(), e);
-			throw new AbortException("IO Exception: " + e.getMessage());
+			throw new AbortException("[APPRENDA] IO Exception: " + e.getMessage());
 		} catch (InterruptedException e) {
 			listener.getLogger().println(e.getMessage());
 			logger.log(Level.SEVERE, e.getMessage(), e);
-			throw new AbortException("Interrupted: " + e.getMessage());
+			throw new AbortException("[APPRENDA] Interrupted: " + e.getMessage());
 		}
 
 	}
@@ -203,7 +238,7 @@ public class ApprendaBuilder extends Builder implements SimpleBuildStep, Seriali
 			// get the version object and the alias
 			JsonObject version = versions.getJsonObject(i);
 			String alias = version.getString("alias");
-			if (advForceVersionAlias == null && alias.matches(prefix + "\\d+")) {
+			if (advVersionAliasToBeForced == null && alias.matches(prefix + "\\d+")) {
 				Matcher matcher = pattern.matcher(alias);
 				matcher.find();
 				int temp = Integer.parseInt(alias.substring(matcher.start()));
@@ -225,23 +260,38 @@ public class ApprendaBuilder extends Builder implements SimpleBuildStep, Seriali
 						highestVersionPublished = false;
 					}
 				}
-			} else if (advForceVersionAlias != null && alias.matches(prefix + "\\d+")) {
+			} else if (advVersionAliasToBeForced != null && alias.matches(advVersionAliasToBeForced)){ //alias.matches(prefix + "\\d+")) {
 				forcedVersionExists = true;
 			}
 		}
 		// now that we've traversed all versions, its time to determine whether
 		// or not to create a new app version
-		if (advForceVersionAlias != null) {
+		if (advVersionAliasToBeForced != null) {
 			if (!forcedVersionExists) {
-				ac.newAppVersion(appAlias, advForceVersionAlias);
+				ac.newAppVersion(appAlias, advVersionAliasToBeForced);
 			}
-			tempNewVersion = advForceVersionAlias;
+			tempNewVersion = advVersionAliasToBeForced;
 		} else if (forceNewVersion || highestVersionPublished) {
 			versionNumber++;
 			tempNewVersion = prefix + versionNumber;
 			ac.newAppVersion(appAlias, tempNewVersion);
 		} else {
 			tempNewVersion = prefix + versionNumber;
+			boolean thisVersionExists = false;
+			for (int i = 0; i < versions.size(); i++)
+			{
+				JsonObject version = versions.getJsonObject(i);
+				String alias = version.getString("alias");
+				if (alias.matches(tempNewVersion))
+				{
+					thisVersionExists = true;
+				}
+			}
+
+			if (thisVersionExists == false)
+			{
+				ac.newAppVersion(appAlias, tempNewVersion);
+			}
 		}
 		return tempNewVersion;
 	}
@@ -277,18 +327,18 @@ public class ApprendaBuilder extends Builder implements SimpleBuildStep, Seriali
 	// This class contains all of the UI validation methods.
 	@Extension
 	public static class DescriptorImpl extends BuildStepDescriptor<Builder> {
-		private boolean bypassSSL;
+		//private boolean bypassSSL;
 
 		public DescriptorImpl(){
 	        load();
 	    }
-		public boolean isBypassSSL() {
-			return true;
-		}
+		//public boolean isBypassSSL() {
+			//return bypassSSL;
+		//}
 
 		@Override
 		public boolean configure(StaplerRequest req, JSONObject formData) throws FormException {
-			bypassSSL = formData.getBoolean("bypassSSL");
+			//bypassSSL = formData.getBoolean("bypassSSL");
 			save();
 			return super.configure(req, formData);
 		}
@@ -299,9 +349,15 @@ public class ApprendaBuilder extends Builder implements SimpleBuildStep, Seriali
 			return FormValidation.ok();
 		}
 
-		public FormValidation doCheckVersionAlias(@QueryParameter String value) throws IOException, ServletException {
+		public FormValidation doCheckAppName(@QueryParameter String value) throws IOException, ServletException {
 			if (value.length() == 0)
-				return FormValidation.error("Please specify the Version Alias");
+				return FormValidation.error("Please specify the Application Name");
+			return FormValidation.ok();
+		}
+
+		public FormValidation doCheckPrefix(@QueryParameter String value) throws IOException, ServletException {
+			if (value.length() == 0)
+				return FormValidation.error("Please specify the Version Prefix");
 			return FormValidation.ok();
 		}
 
@@ -382,7 +438,7 @@ public class ApprendaBuilder extends Builder implements SimpleBuildStep, Seriali
 		 * credentials. public void
 		 * doReloadAppAliases(@QueryParameter("username") final String username)
 		 * { try {
-		 * 
+		 *
 		 * aliases = new ApprendaClient(getUrl(),
 		 * getSSLFlag()).GetAppAliases(username); logger.log(Level.INFO,
 		 * "Retrieved aliases, now populating listbox"); doFillAppAliasItems();

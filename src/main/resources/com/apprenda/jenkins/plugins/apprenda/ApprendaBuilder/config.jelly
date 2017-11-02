@@ -1,3 +1,4 @@
+<!-- documentation on Jelly at https://wiki.jenkins.io/display/JENKINS/Jelly+form+controls and http://wiki.servicenow.com/index.php?title=Extensions_to_Jelly_Syntax and https://wiki.jenkins.io/display/JENKINS/Extend+Jenkins-->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:c="/lib/credentials">
       <f:entry title="Credentials" field="credentialsId">
@@ -7,11 +8,8 @@
           <!-- This is now a textbox, not a select -->
           <f:textbox  />
       </f:entry>
-      <f:entry title="Artifact Name" field="artifactName">
-          <f:textbox />
-      </f:entry>
-      <f:entry title="Package Directory" field="customPackageDirectory">
-          <f:textbox />
+      <f:entry title="Application Name" field="appName">
+          <f:textbox default="${instance.appAlias}" />
       </f:entry>
 
       <!-- Removing out of phase I due to issues with Jenkins reloading configuration in BAC build and thus breaking parity -->
@@ -19,26 +17,42 @@
       <f:entry title="Version Prefix" field="prefix">
           <f:textbox default="v" />
       </f:entry>
-      
 
       <f:entry title="Target Stage" field="stage">
           <f:select/>
-      </f:entry> 
+      </f:entry>
+
+      <f:section title="Select the method for uploading the Apprenda Application Package">
+          <f:radioBlock checked="${instance.archiveUploadMethod != 'archiveURL'}" name="archiveUploadMethod" title="Local File Upload" value="localUpload" inline="true">
+            <f:nested>
+              <f:entry title="Artifact Name" field="artifactName">
+                  <f:textbox />
+              </f:entry>
+              <f:entry title="Package Directory" field="customPackageDirectory">
+                  <f:textbox />
+              </f:entry>
+            </f:nested>
+          </f:radioBlock>
+          <f:radioBlock checked="${instance.archiveUploadMethod == 'archiveURL'}" name="archiveUploadMethod" title="Application Package URL" value="archiveURL" inline="true">
+            <f:nested>
+              <f:entry title="Application Package URL" field="applicationPackageURL">
+                  <f:textbox default="http://"/>
+              </f:entry>
+            </f:nested>
+          </f:radioBlock>
+      </f:section>
 
       <f:advanced>
-          <f:section title="Advanced Options">
-              <f:entry title="Automatically Create New Version Each Time" field="forceNewVersion">
-                  <f:checkbox />
-              </f:entry>
-              <f:block>
-                  <table>
-                      <f:optionalBlock name="dynamic" title="Force Deployment of Application to a Specific Version">
-                          <f:entry title="Version Alias" field="advForceVersionAlias">
-                              <f:textbox />
-                          </f:entry>
-                      </f:optionalBlock>
-                  </table>
-              </f:block>
+        <f:section title="Advanced Options">
+            <f:radioBlock checked="${instance.advancedNewVersionOption != 'Option_AlwaysNewVersion' &amp;&amp; instance.advancedNewVersionOption != 'Option_ForceSpecificVersion'}" name="advancedNewVersionOption" title="None" value="Option_NoAdvancedOption" inline="true" />
+            <f:radioBlock checked="${instance.forceNewVersion == true || instance.advancedNewVersionOption == 'Option_AlwaysNewVersion'}" name="advancedNewVersionOption" title="Automatically Create New Version Each Time" value="Option_AlwaysNewVersion" inline="true" />
+            <f:radioBlock checked="${instance.advIsForcingSpecificVersion == true || instance.advancedNewVersionOption == 'Option_ForceSpecificVersion'}" name="advancedNewVersionOption" title="Force Deployment of Application to a Specific Version" value="Option_ForceSpecificVersion" inline="true">
+              <f:nested>
+                  <f:entry title="Version Alias" field="advVersionAliasToBeForced" inline="true">
+                      <f:textbox />
+                  </f:entry>
+              </f:nested>
+            </f:radioBlock>
           </f:section>
       </f:advanced>
 </j:jelly>
