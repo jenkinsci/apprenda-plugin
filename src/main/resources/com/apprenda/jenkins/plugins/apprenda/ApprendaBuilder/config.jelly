@@ -1,3 +1,4 @@
+<!-- documentation on Jelly at https://wiki.jenkins.io/display/JENKINS/Jelly+form+controls and http://wiki.servicenow.com/index.php?title=Extensions_to_Jelly_Syntax -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:c="/lib/credentials">
       <f:entry title="Credentials" field="credentialsId">
@@ -42,19 +43,16 @@
       </f:section>
 
       <f:advanced>
-          <f:section title="Advanced Options">
-              <f:entry title="Automatically Create New Version Each Time" field="forceNewVersion">
-                  <f:checkbox />
-              </f:entry>
-              <f:block>
-                  <table>
-                      <f:optionalBlock name="advIsForcingSpecificVersion" title="Force Deployment of Application to a Specific Version" inline="true">
-                          <f:entry title="Version Alias" field="advVersionAliasToBeForced" inline="true">
-                              <f:textbox />
-                          </f:entry>
-                      </f:optionalBlock>
-                  </table>
-              </f:block>
+        <f:section title="Advanced Options">
+            <f:radioBlock checked="${instance.advancedNewVersionOption != 'Option_AlwaysNewVersion' &amp;&amp; instance.advancedNewVersionOption != 'Option_ForceSpecificVersion'}" name="advancedNewVersionOption" title="None" value="Option_NoAdvancedOption" inline="true" />
+            <f:radioBlock checked="${instance.forceNewVersion == true || instance.advancedNewVersionOption == 'Option_AlwaysNewVersion'}" name="advancedNewVersionOption" title="Automatically Create New Version Each Time" value="Option_AlwaysNewVersion" inline="true" />
+            <f:radioBlock checked="${instance.advIsForcingSpecificVersion == true || instance.advancedNewVersionOption == 'Option_ForceSpecificVersion'}" name="advancedNewVersionOption" title="Force Deployment of Application to a Specific Version" value="Option_ForceSpecificVersion" inline="true">
+              <f:nested>
+                  <f:entry title="Version Alias" field="advVersionAliasToBeForced" inline="true">
+                      <f:textbox />
+                  </f:entry>
+              </f:nested>
+            </f:radioBlock>
           </f:section>
       </f:advanced>
 </j:jelly>

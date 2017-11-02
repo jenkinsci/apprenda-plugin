@@ -71,16 +71,16 @@ public class ApprendaBuilder extends Builder implements SimpleBuildStep, Seriali
 
 	@DataBoundConstructor
 	public ApprendaBuilder(String appAlias, String appName, String versionAlias, String stage, String artifactName,
-			String credentialsId, String prefix, boolean forceNewVersion, boolean advIsForcingSpecificVersion, String advVersionAliasToBeForced, String customPackageDirectory, String applicationPackageURL, String archiveUploadMethod) {
+			String credentialsId, String prefix, String advVersionAliasToBeForced, String advancedNewVersionOption, String customPackageDirectory, String applicationPackageURL, String archiveUploadMethod) {
 		this.appAlias = appAlias;
 		this.appName = appName;
 		this.advVersionAliasToBeForced = advVersionAliasToBeForced;
-		this.advIsForcingSpecificVersion = advIsForcingSpecificVersion;
+		this.advIsForcingSpecificVersion = advancedNewVersionOption.equals("Option_ForceSpecificVersion");
 		this.stage = stage;
 		this.artifactName = artifactName;
 		this.credentialsId = credentialsId;
 		this.prefix = prefix;
-		this.forceNewVersion = forceNewVersion;
+		this.forceNewVersion = advancedNewVersionOption.equals("Option_AlwaysNewVersion");
 		this.customPackageDirectory = customPackageDirectory;
 		this.applicationPackageURL = applicationPackageURL;
 		this.archiveUploadMethod = archiveUploadMethod;
@@ -100,7 +100,7 @@ public class ApprendaBuilder extends Builder implements SimpleBuildStep, Seriali
 		}
 
 		final String url = credentials.getUrl();
-		final boolean isBypassSSL = getDescriptor().isBypassSSL();
+		final boolean isBypassSSL = credentials.getbypassSSL();//getDescriptor().isBypassSSL();
 
 		Callable<String, IOException> task = new Callable<String, IOException>() {
 			/**
@@ -113,7 +113,7 @@ public class ApprendaBuilder extends Builder implements SimpleBuildStep, Seriali
 
 				try {
 					listener.getLogger()
-							.println("[APPRENDA] Begin build step: Deploying application to Apprenda: " + url);
+							.println("[APPRENDA] Begin build step: Deploying application to Apprenda. Create client against URL " + url + " with bypassSSL set to " + isBypassSSL);
 					ApprendaClient ac = new ApprendaClient(url, isBypassSSL, listener);
 					listener.getLogger().println("[APPRENDA] Authentication starting for " + credentials.getUsername());
 					listener.getLogger().println("[APPRENDA] Tenant Alias: " + credentials.getTenant());
@@ -307,18 +307,18 @@ public class ApprendaBuilder extends Builder implements SimpleBuildStep, Seriali
 	// This class contains all of the UI validation methods.
 	@Extension
 	public static class DescriptorImpl extends BuildStepDescriptor<Builder> {
-		private boolean bypassSSL;
+		//private boolean bypassSSL;
 
 		public DescriptorImpl(){
 	        load();
 	    }
-		public boolean isBypassSSL() {
-			return true;
-		}
+		//public boolean isBypassSSL() {
+			//return bypassSSL;
+		//}
 
 		@Override
 		public boolean configure(StaplerRequest req, JSONObject formData) throws FormException {
-			bypassSSL = formData.getBoolean("bypassSSL");
+			//bypassSSL = formData.getBoolean("bypassSSL");
 			save();
 			return super.configure(req, formData);
 		}

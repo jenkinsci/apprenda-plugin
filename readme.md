@@ -10,7 +10,11 @@ The Apprenda integration into Jenkins CI is a plugin designed with the standards
 - CUSTOM VERSIONING – Developers can provide a custom prefix for the application version, allowing for branched development and testing.
 
 ## Release Notes
-- Current, latest release is v2.0.0, released on Oct 30 2017
+- v2.0.0.
+  - Bypass SSL: On upgrade to this release, you may get some warnings on the configuration variable BypassSSL. This used to be a global configuration option under Jenkins\Manage Jenkins\Configure System\Apprenda. It is now a configuration option tied to each set of Credentials. You can now configure BypassSSL under Credentials\your Apprenda-specific credentials. Make sure to update your Apprenda credentials appropriately
+
+## Releases
+- v2.0.0, released on Nov 03 2017
 - v1.3.1, released on Jan 19 2017
 
 ### Jenkins Support Matrix
@@ -39,7 +43,7 @@ This tutorial provides a quick-start means of deploying your application to Appr
 
 1. Create a new Freestyle project
 2. Under Build configuration, click on "Add Build Step" and then select "Deploy to Apprenda"
-3. Enter your Apprenda credentials, tenant alias, and the URL of the Apprenda installation.
+3. Enter your Apprenda credentials, tenant alias, and the URL of the Apprenda installation. Optionally, you can configure the BypassSSL flag.
 4. Click Add. Jenkins will encrypt & store your credentials on the Jenkins server for use by other projects as well
 5. Now you are ready to start entering specific information about this project. Fill in the fields for the application alias and name, version prefix (default is 'v'), and the target stage for your deployment.
   * From there, fill out the rest of your project with the necessary steps to execute your workflow (for ex. clone from git, build with MSBuild/ant, package using Apprenda's acs.exe etc.)
