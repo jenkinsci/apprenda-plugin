@@ -40,7 +40,7 @@ public class ApprendaClient {
 		try {
 			listener.getLogger().println("[APPRENDA] Attempting to authenticate to Apprenda with username " + credentials.getUsername()
 					+ " and tenant alias " + credentials.getTenant() + ".");
-			;
+
 			JsonObject json = Json.createObjectBuilder().add("username", credentials.getUsername())
 					.add("password", Secret.toString(credentials.getPassword()))
 					.add("tenantAlias", credentials.getTenant()).build();
@@ -56,6 +56,7 @@ public class ApprendaClient {
 			// we are not printing the token for security reasons
 			return true;
 		} catch (Exception e) {
+			listener.getLogger().println("Authentication to Apprenda failed. Ensure that BypassSSL is set to true if you are using self-signed certificates for Apprenda.");
 			listener.getLogger().println(e.getLocalizedMessage() + e);
 			return false;
 		}

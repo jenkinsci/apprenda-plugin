@@ -73,7 +73,7 @@ public class ApprendaBuilder extends Builder implements SimpleBuildStep, Seriali
 	public ApprendaBuilder(String appAlias, String appName, String versionAlias, String stage, String artifactName,
 			String credentialsId, String prefix, String advVersionAliasToBeForced, String advancedNewVersionOption, String customPackageDirectory, String applicationPackageURL, String archiveUploadMethod) {
 		this.appAlias = appAlias;
-		this.appName = appName;
+		this.appName = ((appName == null || appName.length() == 0) ? appAlias : appName);
 		this.advVersionAliasToBeForced = advVersionAliasToBeForced;
 		this.advIsForcingSpecificVersion = advancedNewVersionOption.equals("Option_ForceSpecificVersion");
 		this.stage = stage;
@@ -139,7 +139,7 @@ public class ApprendaBuilder extends Builder implements SimpleBuildStep, Seriali
 					}
 
 					File app = null;
-					if (archiveUploadMethod.equals("localUpload"))
+					if (archiveUploadMethod == null || archiveUploadMethod.equals("localUpload"))
 					{
 							app = getFile(workspace, artifactName, customPackageDirectory);
 							applicationPackageURL = "";
