@@ -4,6 +4,9 @@
       <f:entry title="Credentials" field="credentialsId">
           <c:select/>
       </f:entry>
+      <f:entry title="Build with Parameters" field="buildWithParameters">
+          <f:checkbox />
+      </f:entry>
       <f:entry title="Application Alias" field="appAlias">
           <!-- This is now a textbox, not a select -->
           <f:textbox  />
@@ -19,7 +22,7 @@
       </f:entry>
 
       <f:entry title="Target Stage" field="stage">
-          <f:select/>
+          <f:select />
       </f:entry>
 
       <f:section title="Select the method for uploading the Apprenda Application Package">

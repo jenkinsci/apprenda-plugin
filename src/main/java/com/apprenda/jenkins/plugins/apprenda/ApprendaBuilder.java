@@ -1,3 +1,4 @@
+// Documentation at http://javadoc.jenkins-ci.org/index-all.html
 package com.apprenda.jenkins.plugins.apprenda;
 
 import java.io.File;
@@ -7,6 +8,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.Map;
 
 import javax.json.JsonArray;
 import javax.json.JsonObject;
@@ -27,6 +29,7 @@ import hudson.AbortException;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
+import hudson.EnvVars;
 import hudson.XmlFile;
 import hudson.model.AbstractProject;
 import hudson.model.ItemGroup;
@@ -54,24 +57,36 @@ public class ApprendaBuilder extends Builder implements SimpleBuildStep, Seriali
 	 */
 	private static final long serialVersionUID = 1L;
 	public final String credentialsId;
+
+ /* BEGIN: The 6 variables that can be parameterized */
 	public final String appAlias;
 	public final String appName;
-	public String advVersionAliasToBeForced;
 	public final String stage;
 	public final String artifactName;
+	public final String customPackageDirectory;
+	public final String applicationPackageURL;
+
+	public String appAliasEx;
+	public String appNameEx;
+	public String stageEx;
+	public String artifactNameEx;
+	public String customPackageDirectoryEx;
+	public String applicationPackageURLEx;
+/* END: The 6 variables that can be parameterized */
+
+	public String advVersionAliasToBeForced;
 	public final String prefix;
 	public final String archiveUploadMethod;
 	public final boolean forceNewVersion;
-	public final String customPackageDirectory;
 	public final boolean advIsForcingSpecificVersion;
-	public String applicationPackageURL;
+	public final boolean buildWithParameters;
 
 	private static Logger logger = Logger.getLogger("jenkins.plugins.apprenda");
 	public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
 
 	@DataBoundConstructor
 	public ApprendaBuilder(String appAlias, String appName, String versionAlias, String stage, String artifactName,
-			String credentialsId, String prefix, String advVersionAliasToBeForced, String advancedNewVersionOption, String customPackageDirectory, String applicationPackageURL, String archiveUploadMethod) {
+			String credentialsId, String prefix, String advVersionAliasToBeForced, String advancedNewVersionOption, String customPackageDirectory, String applicationPackageURL, String archiveUploadMethod, Boolean buildWithParameters) {
 		this.appAlias = appAlias;
 		this.appName = ((appName == null || appName.length() == 0) ? appAlias : appName);
 		this.advVersionAliasToBeForced = advVersionAliasToBeForced;
@@ -84,11 +99,12 @@ public class ApprendaBuilder extends Builder implements SimpleBuildStep, Seriali
 		this.customPackageDirectory = customPackageDirectory;
 		this.applicationPackageURL = applicationPackageURL;
 		this.archiveUploadMethod = archiveUploadMethod;
+		this.buildWithParameters = buildWithParameters;
 	}
 
 	// this method is called when a build is kicked off. (SimpleBuildStep)
 	@Override
-	public void perform(Run<?, ?> run, final FilePath workspace, Launcher launcher, final TaskListener listener)
+	public void perform(final Run<?, ?> run, final FilePath workspace, Launcher launcher, final TaskListener listener)
 			throws InterruptedException, IOException {
 		// Define what should be run on the slave for this build
 
@@ -112,16 +128,87 @@ public class ApprendaBuilder extends Builder implements SimpleBuildStep, Seriali
 				// This code will run on the build slave
 
 				try {
+
+					// Assign our new variables to the existing values
+					// We will do this since we may update them below as part of the parameterized build
+					// If we updated them in place, Jenkins would also update the values in the project UI
+					// essentially overwriting the template parameters
+					appAliasEx = appAlias;
+					appNameEx = appName;
+					stageEx = stage;
+					artifactNameEx = artifactName;
+					customPackageDirectoryEx = customPackageDirectory;
+					applicationPackageURLEx = applicationPackageURL;
+
+					if (buildWithParameters == true)
+					{
+						// get the environment variables
+						EnvVars envVars = new EnvVars();
+						envVars = run.getEnvironment(listener);
+						String resultData = null;
+
+						// for the parameters we support templating, check if they are part of the
+						// environment variables and load their updated values
+						resultData = envVars.get(appAliasEx);
+						if (resultData != null && resultData.length() > 0)
+						{
+							listener.getLogger().println("[APPRENDA] Loading appAlias from environment value of '" + resultData + "'");
+							appAliasEx = resultData;
+						}
+						resultData = envVars.get(appNameEx);
+						if (resultData != null && resultData.length() > 0)
+						{
+							listener.getLogger().println("[APPRENDA] Loading appName from environment value of '" + resultData + "'");
+							appNameEx = resultData;
+						}
+						resultData = envVars.get("$ApprendaStage");
+						if (resultData != null && resultData.length() > 0)
+						{
+							if (resultData.equals("Definition") || resultData.equals("Sandbox") || resultData.equals("Published"))
+							{
+								listener.getLogger().println("[APPRENDA] Loading stage from environment value of '" + resultData + "'");
+								stageEx = resultData;
+							}
+							else
+							{
+								listener.getLogger().println("[APPRENDA] Ignoring the incorrect stage definition in the environment value of '" + resultData + "'");
+							}
+						}
+						resultData = envVars.get(customPackageDirectoryEx);
+						if (resultData != null && resultData.length() > 0)
+						{
+							listener.getLogger().println("[APPRENDA] Loading customPackageDirectory from environment value of '" + resultData + "'");
+							customPackageDirectoryEx = resultData;
+						}
+						resultData = envVars.get(applicationPackageURLEx);
+						if (resultData != null && resultData.length() > 0)
+						{
+							listener.getLogger().println("[APPRENDA] Loading applicationPackageURL from environment value of '" + resultData + "'");
+							applicationPackageURLEx = resultData;
+						}
+						resultData = envVars.get(artifactNameEx);
+						if (resultData != null && resultData.length() > 0)
+						{
+							listener.getLogger().println("[APPRENDA] Loading artifactName from environment value of '" + resultData + "'");
+							artifactNameEx = resultData;
+						}
+					}
+
+					/*EnvVars envVars2 = new EnvVars();
+					envVars2 = run.getEnvironment(listener);
+					for (String environmentKey : envVars2.keySet()) {
+							listener.getLogger().println(environmentKey + " = " + envVars2.get(environmentKey));
+					}*/
+
 					listener.getLogger()
 							.println("[APPRENDA] Begin build step: Deploying application to Apprenda. Create client against URL " + url + " with bypassSSL set to " + isBypassSSL);
 					ApprendaClient ac = new ApprendaClient(url, isBypassSSL, listener);
 					listener.getLogger().println("[APPRENDA] Authentication starting for " + credentials.getUsername());
 					listener.getLogger().println("[APPRENDA] Tenant Alias: " + credentials.getTenant());
 					// Begin by loading the credentials and authenticating
-					// against
-					// Apprenda
+					// against Apprenda
 					ac.authenticate(credentials);
-					JsonArray versions = ac.GetAppAliasVersions(appAlias);
+					JsonArray versions = ac.GetAppAliasVersions(appAliasEx);
 					// iterate the JsonArray, here's how we are going to apply
 					// the rules
 					// if we find the right regex of the prefix (whether its v
@@ -133,7 +220,7 @@ public class ApprendaBuilder extends Builder implements SimpleBuildStep, Seriali
 					// then after that, all we have to do is patch it to the
 					// desired
 					// stage. this is the easy part now.
-					if (stage == null || stage.length() < 2)
+					if (stageEx == null || stageEx.length() < 2)
 					{
 						throw new AbortException("[APPRENDA] Please select a Target Stage for the deployment of this application to Apprenda");
 					}
@@ -141,8 +228,8 @@ public class ApprendaBuilder extends Builder implements SimpleBuildStep, Seriali
 					File app = null;
 					if (archiveUploadMethod == null || archiveUploadMethod.equals("localUpload"))
 					{
-							app = getFile(workspace, artifactName, customPackageDirectory);
-							applicationPackageURL = "";
+							app = getFile(workspace, artifactNameEx, customPackageDirectoryEx);
+							applicationPackageURLEx = "";
 					}
 
 					if (advIsForcingSpecificVersion == true)
@@ -162,16 +249,16 @@ public class ApprendaBuilder extends Builder implements SimpleBuildStep, Seriali
 
 					if (versions == null)
 					{
-						listener.getLogger().println("[APPRENDA] Creating a brand new v1 application for alias " + appAlias + " at target stage " + stage);
-						if (!ac.createApp(appAlias, appName, app, stage, applicationPackageURL))
+						listener.getLogger().println("[APPRENDA] Creating a brand new v1 application for alias " + appAliasEx + " at target stage " + stageEx);
+						if (!ac.createApp(appAliasEx, appNameEx, app, stageEx, applicationPackageURLEx))
 							throw new AbortException("[APPRENDA] Apprenda application creation failed");
 						return null;
 					}
 					else
 					{
 						String tempNewVersion = detectVersion(versions, ac);
-						listener.getLogger().println("[APPRENDA] Patching application to " + tempNewVersion + " for alias " + appAlias + " at target stage " + stage);
-						if (!ac.patchApp(appAlias, tempNewVersion, app, stage, applicationPackageURL))
+						listener.getLogger().println("[APPRENDA] Patching application to " + tempNewVersion + " for alias " + appAliasEx + " at target stage " + stageEx);
+						if (!ac.patchApp(appAliasEx, tempNewVersion, app, stageEx, applicationPackageURLEx))
 							throw new AbortException("[APPRENDA] Apprenda application patching failed");
 						return null;
 					}
@@ -268,13 +355,13 @@ public class ApprendaBuilder extends Builder implements SimpleBuildStep, Seriali
 		// or not to create a new app version
 		if (advVersionAliasToBeForced != null) {
 			if (!forcedVersionExists) {
-				ac.newAppVersion(appAlias, advVersionAliasToBeForced);
+				ac.newAppVersion(appAliasEx, advVersionAliasToBeForced);
 			}
 			tempNewVersion = advVersionAliasToBeForced;
 		} else if (forceNewVersion || highestVersionPublished) {
 			versionNumber++;
 			tempNewVersion = prefix + versionNumber;
-			ac.newAppVersion(appAlias, tempNewVersion);
+			ac.newAppVersion(appAliasEx, tempNewVersion);
 		} else {
 			tempNewVersion = prefix + versionNumber;
 			boolean thisVersionExists = false;
@@ -290,7 +377,7 @@ public class ApprendaBuilder extends Builder implements SimpleBuildStep, Seriali
 
 			if (thisVersionExists == false)
 			{
-				ac.newAppVersion(appAlias, tempNewVersion);
+				ac.newAppVersion(appAliasEx, tempNewVersion);
 			}
 		}
 		return tempNewVersion;
