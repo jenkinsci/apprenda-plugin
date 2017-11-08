@@ -64,15 +64,24 @@ If you would like to templatize a project and define parameters for some of the 
 1. Install the Jenkins MultiJob plugin
 2. Create a new MultiJob called BuilderJob and indicate this project is parameterized. Notice that in this example implementation we will use all 3 ways of specifying parameters to a project. Those 3 are "Build with Parameters", predefined parameters, parameters from property file. You can pick and chose any of these methods, or other methods that inject environment variables to a build. You can even chose only 1 of them and supply all parameters in a property file.
 3. Create a new string parameter for the application name
+![Image](ScreenShots/BuilderJob.png?raw=true)
 4. Add a new post build action to "Trigger parameterized build on other projects". Indicate that "ApprendaJob" is the project to build (you may have to go create it first). Now add some predefined parameters for the application alias and also ask to import parameters from a property file. Don't forget to also indicate that you want to include the "Current build parameters"
+![Image](ScreenShots/PostBuildAction.png?raw=true)
 5. This is what the property file looks like
+![Image](ScreenShots/ReadingParametersFromFile.png?raw=true)
 6. Now go and create or edit the ApprendaJob, that's a MultiJob project
 7. Again, indicate that ApprendaJob project is parameterized. Create a string parameter for each of the parameter names you created in step number 4 above. You don't have to enter a default value unless you want to use this project independently as well
+![Image](ScreenShots/ApprendaJobParameterized.png?raw=true)
 8. Add a new build step to "Deploy to Apprenda". This can be an independent step or be part of a MultiJob Phase
 9. Instead of entering literal values for all of the Apprenda configuration settings (the 6 variables mentioned below), you can instead use the identical parameter names from steps 4 and 7 above. Make sure to check the box that says "Build with Parameters".
+![Image](ScreenShots/DeployToApprenda_1.png?raw=true)
+![Image](ScreenShots/DeployToApprenda_2.png?raw=true)
 10. You are now ready to start a build. Go to the BuilderJob and click on "Build with Parameters" and enter a name for your Apprenda application
+![Image](ScreenShots/ExecutionTime_1.png?raw=true)
 11. When the BuilderJob kicks off the ApprendaJob, you can go to the actual execution environment (using Build History links). View the Parameters to ensure all the proper values were propagated to the Apprenda build step
+![Image](ScreenShots/ExecutionTime_2.png?raw=true)
 12. View the Console Output to see how Apprenda used the new parameters. You now have a parameterized build for Apprenda!
+![Image](ScreenShots/ExecutionTime_3.png?raw=true)
 
 The 6 variables from the Apprenda build step that allow for parameterization are:
 1. Application Name
