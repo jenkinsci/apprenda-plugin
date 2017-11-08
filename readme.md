@@ -86,7 +86,7 @@ If you would like to templatize a project and define parameters for some of the 
 The 6 variables from the Apprenda build step that allow for parameterization are:
 1. Application Name
 2. Application Alias
-3. Target Stage *This Apprenda parameter expects the fixed environment variable $ApprendaStage*
+3. Target Stage - *This Apprenda parameter expects the fixed environment variable $ApprendaStage*
 4. Artifact Name
 5. Package Directory
 6. Application Package URL
