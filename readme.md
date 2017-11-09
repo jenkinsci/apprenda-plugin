@@ -52,7 +52,7 @@ This tutorial provides a quick-start means of deploying your application to Appr
 6. You have a choice to either specify the local path to an Apprenda Application Package using the Artifact Name and Package Directory options, or you can provide the Apprenda Application Package URL
   * If entering the local path, Artifact Name should be the file name, for example myapplication.zip. Package Directory should be the full path to the folder containing myapplication.zip
   * If entering the URL path, it should be a fully formatted URL to the Application Package, for example http://docs.apprenda.com/sites/default/files/TimeCard_Archive.zip
-6. There are a few advanced options that offer flexibility for developers concerning version management. For example, there exists an option that forces every build can create a new version in Apprenda. This is especially useful if you have an application in Published mode, and you plan to test in parallel multiple vNext instances of your application. Another advanced option is the ability to force the deployment to a specific Apprenda Version, for example v23.
+6. There are a few advanced options that offer flexibility for developers concerning version management. For example, you have the option to force every build to create a new version in Apprenda. This is especially useful if you have an application in Published mode, and you plan to test in parallel multiple vNext instances of your application. Another advanced option is the ability to force the deployment to a specific Apprenda Version, for example v23.
 6. Click Save.
 7. Click "Build Now".
 
