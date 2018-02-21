@@ -27,7 +27,7 @@ The Apprenda integration into Jenkins CI is a plugin designed with the standards
 
 ## Build From Source
 - Run `git clone` to download all the relevant binaries
-- Run `mvn clean install` in the same folder as pom.xml. Tested with apache-maven-3.5.0
+- Run `mvn clean install -Djava.level=8` in the same folder as pom.xml. Tested with apache-maven-3.5.0
 
 This will generate the Jenkins Apprenda.hpi plugin in the `/target` folder, which you can then install into your Jenkins environment.
 

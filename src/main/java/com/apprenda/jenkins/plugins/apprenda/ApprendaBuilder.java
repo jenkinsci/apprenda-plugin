@@ -143,8 +143,7 @@ public class ApprendaBuilder extends Builder implements SimpleBuildStep, Seriali
 					if (buildWithParameters == true)
 					{
 						// get the environment variables
-						EnvVars envVars = new EnvVars();
-						envVars = run.getEnvironment(listener);
+						EnvVars envVars = run.getEnvironment(listener);
 						String resultData = null;
 
 						// for the parameters we support templating, check if they are part of the
@@ -208,7 +207,7 @@ public class ApprendaBuilder extends Builder implements SimpleBuildStep, Seriali
 					// Begin by loading the credentials and authenticating
 					// against Apprenda
 					ac.authenticate(credentials);
-					JsonArray versions = ac.GetAppAliasVersions(appAliasEx);
+					JsonArray versions = ac.getAppAliasVersions(appAliasEx);
 					// iterate the JsonArray, here's how we are going to apply
 					// the rules
 					// if we find the right regex of the prefix (whether its v
@@ -287,13 +286,21 @@ public class ApprendaBuilder extends Builder implements SimpleBuildStep, Seriali
 		};
 
 		// Get a "channel" to the build machine and run the task there
-		try {
-			launcher.getChannel().call(task);
-		} catch (IOException e) {
+		try
+		{
+			if (task != null)
+			{
+				launcher.getChannel().call(task);
+			}
+		}
+		catch (IOException e)
+		{
 			listener.getLogger().println(e.getMessage());
 			logger.log(Level.SEVERE, e.getMessage(), e);
 			throw new AbortException("[APPRENDA] IO Exception: " + e.getMessage());
-		} catch (InterruptedException e) {
+		}
+		catch (InterruptedException e)
+		{
 			listener.getLogger().println(e.getMessage());
 			logger.log(Level.SEVERE, e.getMessage(), e);
 			throw new AbortException("[APPRENDA] Interrupted: " + e.getMessage());
@@ -527,7 +534,7 @@ public class ApprendaBuilder extends Builder implements SimpleBuildStep, Seriali
 		 * { try {
 		 *
 		 * aliases = new ApprendaClient(getUrl(),
-		 * getSSLFlag()).GetAppAliases(username); logger.log(Level.INFO,
+		 * getSSLFlag()).getAppAliases(username); logger.log(Level.INFO,
 		 * "Retrieved aliases, now populating listbox"); doFillAppAliasItems();
 		 * logger.log(Level.INFO, "Repopulation complete."); save(); load(); }
 		 * catch (Exception e) { logger.log(Level.SEVERE, e.getMessage(), e); }

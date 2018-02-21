@@ -1,88 +1,113 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-<modelVersion>4.0.0</modelVersion>
-<parent>
-    <groupId>org.jenkins-ci.plugins</groupId>
-    <artifactId>plugin</artifactId>
-    <!-- Baseline Jenkins version you use to build and test the plugin. Users must have this version or newer to run. -->
-    <version>1.580.1</version>
-    <relativePath />
-</parent>
-<groupId>com.apprenda.jenkins.plugins</groupId>
-<artifactId>apprenda</artifactId>
-<version>2.0.0</version>
-<packaging>hpi</packaging>
-<build>
-    <plugins>
-        <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-release-plugin</artifactId>
-            <version>2.5.2</version>
-        </plugin>
-    </plugins>
-</build>
-<name>Apprenda Plugin</name>
-<url>https://github.com/apprenda/apprenda-jenkins-integration</url>
-<licenses>
-    <license>
-        <name>MIT License</name>
-        <url>http://opensource.org/licenses/MIT</url>
-    </license>
-</licenses>
-<organization>
-    <name>Apprenda</name>
-    <url>http://www.apprenda.com</url>
-</organization>
-<repositories>
-    <repository>
-        <id>repo.jenkins-ci.org</id>
-        <url>http://repo.jenkins-ci.org/public/</url>
-    </repository>
-    <repository>
-        <id>central</id>
-        <url>https://repo1.maven.org/maven2</url>
-        <releases>
-            <enabled>true</enabled>
-        </releases>
-    </repository>
-</repositories>
-<pluginRepositories>
-    <pluginRepository>
-        <id>repo.jenkins-ci.org</id>
-        <url>http://repo.jenkins-ci.org/public/</url>
-    </pluginRepository>
-</pluginRepositories>
-<dependencies>
-    <dependency>
-        <groupId>org.glassfish.jersey.media</groupId>
-        <artifactId>jersey-media-json-processing</artifactId>
-        <version>2.18</version>
-    </dependency>
-    <dependency>
-      <groupId>org.glassfish.jersey.core</groupId>
-      <artifactId>jersey-client</artifactId>
-      <version>2.18</version>
-    </dependency>
-    <dependency>
-      <groupId>org.glassfish.jersey.media</groupId>
-      <artifactId>jersey-media-json-jackson</artifactId>
-      <version>2.18</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.commons</groupId>
-      <artifactId>commons-lang3</artifactId>
-      <version>3.1</version>
-    </dependency>
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>4.11</version>
-    </dependency>
-    <dependency>
+    <modelVersion>4.0.0</modelVersion>
+
+    <name>Apprenda Plugin</name>
+    <description>This plugin enables development teams the ability to deploy their Jenkins projects to the Apprenda Cloud Platform seamlessly.</description>
+    <url>https://github.com/apprenda/apprenda-jenkins-integration</url>
+    <organization>
+        <name>Apprenda</name>
+        <url>http://www.apprenda.com</url>
+    </organization>
+
+    <developers>
+        <developer>
+            <id>Apprenda</id>
+            <name>Apprenda</name>
+            <email>support@apprenda.com</email>
+        </developer>
+    </developers>
+
+    <parent>
         <groupId>org.jenkins-ci.plugins</groupId>
-        <artifactId>credentials</artifactId>
-        <version>1.22</version>
-    </dependency>
-</dependencies>
-<description>This plugin enables development teams the ability to deploy their Jenkins projects to Apprenda seamlessly.</description>
+        <artifactId>plugin</artifactId>
+        <!-- Baseline Jenkins POM version you use to build and test the plugin. This is not the Jenkins version, so don't be alarmed.
+         https://github.com/jenkinsci/plugin-pom/releases has the POM releases. -->
+        <version>3.2</version>
+        <relativePath />
+    </parent>
+
+    <groupId>com.apprenda.jenkins.plugins</groupId>
+    <artifactId>apprenda</artifactId>
+    <version>2.1.0</version>
+    <packaging>hpi</packaging>
+
+    <properties>
+        <!-- Baseline Jenkins version you use to build the plugin. Users must have this version or newer to run. -->
+        <jenkins.version>1.651.3</jenkins.version>
+        <java.level>7</java.level>
+        <jersey.version>2.26</jersey.version>
+    </properties>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-release-plugin</artifactId>
+                <version>2.5.2</version>
+            </plugin>
+        </plugins>
+    </build>
+
+    <licenses>
+        <license>
+            <name>MIT License</name>
+            <url>http://opensource.org/licenses/MIT</url>
+        </license>
+    </licenses>
+
+    <repositories>
+        <repository>
+            <id>repo.jenkins-ci.org</id>
+            <url>http://repo.jenkins-ci.org/public/</url>
+        </repository>
+        <repository>
+            <id>central</id>
+            <url>https://repo1.maven.org/maven2</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+        </repository>
+    </repositories>
+
+    <pluginRepositories>
+        <pluginRepository>
+            <id>repo.jenkins-ci.org</id>
+            <url>http://repo.jenkins-ci.org/public/</url>
+        </pluginRepository>
+    </pluginRepositories>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.glassfish.jersey.media</groupId>
+            <artifactId>jersey-media-json-processing</artifactId>
+            <version>2.18</version>
+        </dependency>
+        <dependency>
+          <groupId>org.glassfish.jersey.core</groupId>
+          <artifactId>jersey-client</artifactId>
+          <version>2.18</version>
+        </dependency>
+        <dependency>
+          <groupId>org.glassfish.jersey.media</groupId>
+          <artifactId>jersey-media-json-jackson</artifactId>
+          <version>2.18</version>
+        </dependency>
+        <dependency>
+          <groupId>org.apache.commons</groupId>
+          <artifactId>commons-lang3</artifactId>
+          <version>3.4</version>
+        </dependency>
+        <dependency>
+          <groupId>junit</groupId>
+          <artifactId>junit</artifactId>
+          <version>4.12</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jenkins-ci.plugins</groupId>
+            <artifactId>credentials</artifactId>
+            <version>1.22</version>
+        </dependency>
+    </dependencies>
+
 </project>

@@ -57,6 +57,9 @@ public class ApprendaClient {
 			return true;
 		} catch (Exception e) {
 			listener.getLogger().println("Authentication to Apprenda failed. Ensure that BypassSSL is set to true if you are using self-signed certificates for Apprenda.");
+
+			String fullStackTrace = org.apache.commons.lang.exception.ExceptionUtils.getFullStac‌​kTrace(e);
+			listener.getLogger().println(fullStackTrace);
 			listener.getLogger().println(e.getLocalizedMessage() + e);
 			return false;
 		}
@@ -87,12 +90,13 @@ public class ApprendaClient {
 
 	// this method patches the application to a specific version, with a file
 	// that contains the new binaries
-	public Boolean patchApp(String appAlias, String versionAlias, File appFile, String stage, String applicationPackageURL) {
+	public Boolean patchApp(String appAlias, String versionAlias, File appFile, String stage, String applicationPackageURL) throws java.io.IOException
+	{
+		InputStream fileInStream = null;
 		try {
 			listener.getLogger().println("[APPRENDA] Starting promotion of application: " + appAlias + " and version: " + versionAlias);
 			String VERSION_PATH = "developer/api/v1/versions/";
 
-			InputStream fileInStream = null;
 			Response response = null;
 			if (appFile != null)
 			{
@@ -112,13 +116,21 @@ public class ApprendaClient {
 				listener.getLogger().println("[APPRENDA] Promotion complete.");
 				return true;
 			} else {
-				listener.getLogger().println("[APPRENDA] An error occurred during the patching of your application. Here's what I got: "
+				listener.getLogger().println("[APPRENDA] An error occurred during the patching of your application. Error details: "
 								+ response.toString());
 				return false;
 			}
-		} catch (Exception e) {
+		} catch (Exception e)
+		{
 			listener.getLogger().println(e.getMessage() + e);
 			return false;
+		}
+		finally
+		{
+			if (fileInStream != null)
+			{
+				fileInStream.close();
+			}
 		}
 	}
 
@@ -149,7 +161,7 @@ public class ApprendaClient {
 	}
 
 	// this method get all of the versions
-	public JsonArray GetAppAliasVersions(String appAlias) throws Exception {
+	public JsonArray getAppAliasVersions(String appAlias) throws Exception {
 		if (token == null) {
 			throw new SecurityException("[APPRENDA] Authentication failed previously, no session token exists.");
 		}
@@ -162,7 +174,8 @@ public class ApprendaClient {
 		}
 	}
 
-	public ArrayList<String> GetAppAliases(String username) throws SecurityException {
+/*
+	public ArrayList<String> getAppAliases(String username) throws SecurityException {
 		try {
 			if (token == null)
 				throw new SecurityException("[APPRENDA] Authentication failed previously, no session token exists.");
@@ -187,5 +200,5 @@ public class ApprendaClient {
 			listener.getLogger().println(e.getMessage() + e);
 			return null;
 		}
-	}
+	}*/
 }
