@@ -27,7 +27,7 @@
         <relativePath />
     </parent>
 
-    <groupId>com.apprenda.jenkins.plugins</groupId>
+    <groupId>org/jenkins-ci/plugins/apprenda</groupId>
     <artifactId>apprenda</artifactId>
     <version>2.1.0</version>
     <packaging>hpi</packaging>
