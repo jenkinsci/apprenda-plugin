@@ -4,7 +4,7 @@
 
     <name>Apprenda Plugin</name>
     <description>This plugin enables development teams the ability to deploy their Jenkins projects to the Apprenda Cloud Platform seamlessly.</description>
-    <url>https://github.com/apprenda/apprenda-jenkins-integration</url>
+    <url>https://wiki.jenkins.io/display/JENKINS/Apprenda+Plugin</url>
     <organization>
         <name>Apprenda</name>
         <url>http://www.apprenda.com</url>
@@ -14,7 +14,7 @@
         <developer>
             <id>Apprenda</id>
             <name>Apprenda</name>
-            <email>support@apprenda.com</email>
+            <email>azure@apprenda.com</email>
         </developer>
     </developers>
 
