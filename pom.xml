@@ -48,6 +48,12 @@
             </plugin>
         </plugins>
     </build>
+    
+    <scm>
+        <connection>scm:git:ssh://github.com/jenkinsci/apprenda-plugin.git</connection>
+        <developerConnection>scm:git:ssh://git@github.com/jenkinsci/apprenda-plugin.git</developerConnection>
+        <url>https://github.com/jenkinsci/apprenda-plugin</url>
+    </scm>
 
     <licenses>
         <license>
