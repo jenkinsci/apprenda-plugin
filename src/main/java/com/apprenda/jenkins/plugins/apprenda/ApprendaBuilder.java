@@ -82,7 +82,6 @@ public class ApprendaBuilder extends Builder implements SimpleBuildStep, Seriali
 	public final boolean buildWithParameters;
 
 	private static Logger logger = Logger.getLogger("jenkins.plugins.apprenda");
-	public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
 
 	@DataBoundConstructor
 	public ApprendaBuilder(String appAlias, String appName, String versionAlias, String stage, String artifactName,
@@ -106,7 +105,6 @@ public class ApprendaBuilder extends Builder implements SimpleBuildStep, Seriali
 	@Override
 	public void perform(final Run<?, ?> run, final FilePath workspace, Launcher launcher, final TaskListener listener)
 			throws InterruptedException, IOException {
-		// Define what should be run on the slave for this build
 
 		final ApprendaCredentials credentials = CredentialsMatchers.firstOrNull(
 				CredentialsProvider.lookupCredentials(ApprendaCredentials.class, Jenkins.getInstance(), ACL.SYSTEM),
@@ -118,86 +116,92 @@ public class ApprendaBuilder extends Builder implements SimpleBuildStep, Seriali
 		final String url = credentials.getUrl();
 		final boolean isBypassSSL = credentials.getbypassSSL();//getDescriptor().isBypassSSL();
 
+		/****************************************/
+		// Code block below is not serializable
+		/****************************************/
+		// Assign our new variables to the existing values
+		// We will do this since we may update them below as part of the parameterized build
+		// If we updated them in place, Jenkins would also update the values in the project UI
+		// essentially overwriting the template parameters
+		appAliasEx = appAlias;
+		appNameEx = appName;
+		stageEx = stage;
+		artifactNameEx = artifactName;
+		customPackageDirectoryEx = customPackageDirectory;
+		applicationPackageURLEx = applicationPackageURL;
+
+		if (buildWithParameters == true)
+		{
+			/*
+			// Print all available environment variables
+			EnvVars envVars2 = new EnvVars();
+			envVars2 = run.getEnvironment(listener);
+			for (String environmentKey : envVars2.keySet()) {
+					listener.getLogger().println(environmentKey + " = " + envVars2.get(environmentKey));
+			}
+			*/
+
+			// get the environment variables
+			EnvVars envVars = run.getEnvironment(listener);
+			String resultData = null;
+
+			// for the parameters we support templating, check if they are part of the
+			// environment variables and load their updated values
+			resultData = envVars.get(appAliasEx);
+			if (resultData != null && resultData.length() > 0)
+			{
+				listener.getLogger().println("[APPRENDA] Loading appAlias from environment value of '" + resultData + "'");
+				appAliasEx = resultData;
+			}
+			resultData = envVars.get(appNameEx);
+			if (resultData != null && resultData.length() > 0)
+			{
+				listener.getLogger().println("[APPRENDA] Loading appName from environment value of '" + resultData + "'");
+				appNameEx = resultData;
+			}
+			resultData = envVars.get("$ApprendaStage");
+			if (resultData != null && resultData.length() > 0)
+			{
+				if (resultData.equals("Definition") || resultData.equals("Sandbox") || resultData.equals("Published"))
+				{
+					listener.getLogger().println("[APPRENDA] Loading stage from environment value of '" + resultData + "'");
+					stageEx = resultData;
+				}
+				else
+				{
+					listener.getLogger().println("[APPRENDA] Ignoring the incorrect stage definition in the environment value of '" + resultData + "'");
+				}
+			}
+			resultData = envVars.get(customPackageDirectoryEx);
+			if (resultData != null && resultData.length() > 0)
+			{
+				listener.getLogger().println("[APPRENDA] Loading customPackageDirectory from environment value of '" + resultData + "'");
+				customPackageDirectoryEx = resultData;
+			}
+			resultData = envVars.get(applicationPackageURLEx);
+			if (resultData != null && resultData.length() > 0)
+			{
+				listener.getLogger().println("[APPRENDA] Loading applicationPackageURL from environment value of '" + resultData + "'");
+				applicationPackageURLEx = resultData;
+			}
+			resultData = envVars.get(artifactNameEx);
+			if (resultData != null && resultData.length() > 0)
+			{
+				listener.getLogger().println("[APPRENDA] Loading artifactName from environment value of '" + resultData + "'");
+				artifactNameEx = resultData;
+			}
+		}
+
+		// The following callable task encapsulates all the code that can be executed on a Jenkins master or a Jenkins slave node
+		// It needs to be serializable!
 		Callable<String, IOException> task = new Callable<String, IOException>() {
-			/**
-			 *
-			 */
+
 			private static final long serialVersionUID = 1L;
 
 			public String call() throws IOException {
-				// This code will run on the build slave
 
-				try {
-
-					// Assign our new variables to the existing values
-					// We will do this since we may update them below as part of the parameterized build
-					// If we updated them in place, Jenkins would also update the values in the project UI
-					// essentially overwriting the template parameters
-					appAliasEx = appAlias;
-					appNameEx = appName;
-					stageEx = stage;
-					artifactNameEx = artifactName;
-					customPackageDirectoryEx = customPackageDirectory;
-					applicationPackageURLEx = applicationPackageURL;
-
-					if (buildWithParameters == true)
-					{
-						// get the environment variables
-						EnvVars envVars = run.getEnvironment(listener);
-						String resultData = null;
-
-						// for the parameters we support templating, check if they are part of the
-						// environment variables and load their updated values
-						resultData = envVars.get(appAliasEx);
-						if (resultData != null && resultData.length() > 0)
-						{
-							listener.getLogger().println("[APPRENDA] Loading appAlias from environment value of '" + resultData + "'");
-							appAliasEx = resultData;
-						}
-						resultData = envVars.get(appNameEx);
-						if (resultData != null && resultData.length() > 0)
-						{
-							listener.getLogger().println("[APPRENDA] Loading appName from environment value of '" + resultData + "'");
-							appNameEx = resultData;
-						}
-						resultData = envVars.get("$ApprendaStage");
-						if (resultData != null && resultData.length() > 0)
-						{
-							if (resultData.equals("Definition") || resultData.equals("Sandbox") || resultData.equals("Published"))
-							{
-								listener.getLogger().println("[APPRENDA] Loading stage from environment value of '" + resultData + "'");
-								stageEx = resultData;
-							}
-							else
-							{
-								listener.getLogger().println("[APPRENDA] Ignoring the incorrect stage definition in the environment value of '" + resultData + "'");
-							}
-						}
-						resultData = envVars.get(customPackageDirectoryEx);
-						if (resultData != null && resultData.length() > 0)
-						{
-							listener.getLogger().println("[APPRENDA] Loading customPackageDirectory from environment value of '" + resultData + "'");
-							customPackageDirectoryEx = resultData;
-						}
-						resultData = envVars.get(applicationPackageURLEx);
-						if (resultData != null && resultData.length() > 0)
-						{
-							listener.getLogger().println("[APPRENDA] Loading applicationPackageURL from environment value of '" + resultData + "'");
-							applicationPackageURLEx = resultData;
-						}
-						resultData = envVars.get(artifactNameEx);
-						if (resultData != null && resultData.length() > 0)
-						{
-							listener.getLogger().println("[APPRENDA] Loading artifactName from environment value of '" + resultData + "'");
-							artifactNameEx = resultData;
-						}
-					}
-
-					/*EnvVars envVars2 = new EnvVars();
-					envVars2 = run.getEnvironment(listener);
-					for (String environmentKey : envVars2.keySet()) {
-							listener.getLogger().println(environmentKey + " = " + envVars2.get(environmentKey));
-					}*/
+				try
+				{
 
 					listener.getLogger()
 							.println("[APPRENDA] Begin build step: Deploying application to Apprenda. Create client against URL " + url + " with bypassSSL set to " + isBypassSSL);
@@ -415,7 +419,7 @@ public class ApprendaBuilder extends Builder implements SimpleBuildStep, Seriali
 
 	@Override
 	public DescriptorImpl getDescriptor() {
-		return DESCRIPTOR;
+		return (DescriptorImpl)super.getDescriptor();
 	}
 
 	// This class contains all of the UI validation methods.
