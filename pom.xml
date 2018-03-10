@@ -52,8 +52,8 @@
         <connection>scm:git:git://github.com/jenkinsci/apprenda-plugin.git</connection>
         <developerConnection>scm:git:git@github.com:jenkinsci/apprenda-plugin.git</developerConnection>
         <url>https://github.com/jenkinsci/apprenda-plugin</url>
-      <tag>HEAD</tag>
-  </scm>
+        <tag>HEAD</tag>
+    </scm>
 
     <licenses>
         <license>
