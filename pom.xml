@@ -2,9 +2,6 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <name>Apprenda Plugin</name>
-    <description>This plugin enables development teams the ability to deploy their Jenkins projects to the Apprenda Cloud Platform seamlessly.</description>
-    <url>https://wiki.jenkins.io/display/JENKINS/Apprenda+Plugin</url>
     <organization>
         <name>Apprenda</name>
         <url>http://www.apprenda.com</url>
@@ -27,9 +24,12 @@
         <relativePath />
     </parent>
     
+    <name>Apprenda Plugin</name>
+    <description>This plugin enables development teams the ability to deploy their Jenkins projects to the Apprenda Cloud Platform seamlessly.</description>
+    <url>https://wiki.jenkins.io/display/JENKINS/Apprenda+Plugin</url>
     <groupId>org.jenkins-ci.plugins</groupId>
     <artifactId>apprenda</artifactId>
-    <version>2.1.0</version>
+    <version>2.2.0-SNAPSHOT</version>
     <packaging>hpi</packaging>
 
     <properties>
