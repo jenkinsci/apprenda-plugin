@@ -9,10 +9,13 @@
       </f:entry>
       <f:entry title="Application Alias" field="appAlias">
           <!-- This is now a textbox, not a select -->
-          <f:textbox  />
+          <f:textbox />
       </f:entry>
       <f:entry title="Application Name" field="appName">
           <f:textbox default="${instance.appAlias}" />
+      </f:entry>
+      <f:entry title="Description" field="appDescription">
+          <f:textbox />
       </f:entry>
 
       <!-- Removing out of phase I due to issues with Jenkins reloading configuration in BAC build and thus breaking parity -->

@@ -113,11 +113,12 @@ public class ApprendaRestUtility {
 		}
 	}
 
-	public Response CreateApplication(boolean bypassSSL, String url, String path, String alias, String name) throws Exception {
+	public Response CreateApplication(boolean bypassSSL, String url, String path, String alias, String name, String description) throws Exception {
 		try {
 			JSONObject json = new JSONObject();
 			json.put("Name", name);
 			json.put("Alias", alias);
+			json.put("Description", description);
 
 			Client client = getClient(bypassSSL);
 			WebTarget target = client.target(url).path(path);

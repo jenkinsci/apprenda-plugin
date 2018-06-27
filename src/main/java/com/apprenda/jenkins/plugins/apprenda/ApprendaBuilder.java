@@ -61,6 +61,7 @@ public class ApprendaBuilder extends Builder implements SimpleBuildStep, Seriali
  /* BEGIN: The 6 variables that can be parameterized */
 	public final String appAlias;
 	public final String appName;
+	public final String appDescription;
 	public final String stage;
 	public final String artifactName;
 	public final String customPackageDirectory;
@@ -68,6 +69,7 @@ public class ApprendaBuilder extends Builder implements SimpleBuildStep, Seriali
 
 	public String appAliasEx;
 	public String appNameEx;
+	public String appDescriptionEx;
 	public String stageEx;
 	public String artifactNameEx;
 	public String customPackageDirectoryEx;
@@ -84,10 +86,11 @@ public class ApprendaBuilder extends Builder implements SimpleBuildStep, Seriali
 	private static Logger logger = Logger.getLogger("jenkins.plugins.apprenda");
 
 	@DataBoundConstructor
-	public ApprendaBuilder(String appAlias, String appName, String versionAlias, String stage, String artifactName,
+	public ApprendaBuilder(String appAlias, String appName, String appDescription, String versionAlias, String stage, String artifactName,
 			String credentialsId, String prefix, String advVersionAliasToBeForced, String advancedNewVersionOption, String customPackageDirectory, String applicationPackageURL, String archiveUploadMethod, Boolean buildWithParameters) {
 		this.appAlias = appAlias;
 		this.appName = ((appName == null || appName.length() == 0) ? appAlias : appName);
+		this.appDescription = ((appDescription == null || appDescription.length() == 0) ? "Created by the Jenkins CI plugin" : appDescription);;
 		this.advVersionAliasToBeForced = advVersionAliasToBeForced;
 		this.advIsForcingSpecificVersion = advancedNewVersionOption.equals("Option_ForceSpecificVersion");
 		this.stage = stage;
@@ -125,6 +128,7 @@ public class ApprendaBuilder extends Builder implements SimpleBuildStep, Seriali
 		// essentially overwriting the template parameters
 		appAliasEx = appAlias;
 		appNameEx = appName;
+		appDescriptionEx = appDescription;
 		stageEx = stage;
 		artifactNameEx = artifactName;
 		customPackageDirectoryEx = customPackageDirectory;
@@ -158,6 +162,12 @@ public class ApprendaBuilder extends Builder implements SimpleBuildStep, Seriali
 			{
 				listener.getLogger().println("[APPRENDA] Loading appName from environment value of '" + resultData + "'");
 				appNameEx = resultData;
+			}
+			resultData = envVars.get(appDescriptionEx);
+			if (resultData != null && resultData.length() > 0)
+			{
+				listener.getLogger().println("[APPRENDA] Loading appDescription from environment value of '" + resultData + "'");
+				appDescriptionEx = resultData;
 			}
 			resultData = envVars.get("$ApprendaStage");
 			if (resultData != null && resultData.length() > 0)
@@ -253,7 +263,7 @@ public class ApprendaBuilder extends Builder implements SimpleBuildStep, Seriali
 					if (versions == null)
 					{
 						listener.getLogger().println("[APPRENDA] Creating a brand new v1 application for alias " + appAliasEx + " at target stage " + stageEx);
-						if (!ac.createApp(appAliasEx, appNameEx, app, stageEx, applicationPackageURLEx))
+						if (!ac.createApp(appAliasEx, appNameEx, appDescriptionEx, app, stageEx, applicationPackageURLEx))
 							throw new AbortException("[APPRENDA] Apprenda application creation failed");
 						return null;
 					}
@@ -366,13 +376,13 @@ public class ApprendaBuilder extends Builder implements SimpleBuildStep, Seriali
 		// or not to create a new app version
 		if (advVersionAliasToBeForced != null) {
 			if (!forcedVersionExists) {
-				ac.newAppVersion(appAliasEx, advVersionAliasToBeForced);
+				ac.newAppVersion(appAliasEx, advVersionAliasToBeForced, appDescriptionEx);
 			}
 			tempNewVersion = advVersionAliasToBeForced;
 		} else if (forceNewVersion || highestVersionPublished) {
 			versionNumber++;
 			tempNewVersion = prefix + versionNumber;
-			ac.newAppVersion(appAliasEx, tempNewVersion);
+			ac.newAppVersion(appAliasEx, tempNewVersion, appDescriptionEx);
 		} else {
 			tempNewVersion = prefix + versionNumber;
 			boolean thisVersionExists = false;
@@ -388,7 +398,7 @@ public class ApprendaBuilder extends Builder implements SimpleBuildStep, Seriali
 
 			if (thisVersionExists == false)
 			{
-				ac.newAppVersion(appAliasEx, tempNewVersion);
+				ac.newAppVersion(appAliasEx, tempNewVersion, appDescriptionEx);
 			}
 		}
 		return tempNewVersion;
